@@ -27,7 +27,7 @@ def is_stream(url: str) -> bool:
 
 def check_url(url: str) -> bool:
     """
-    判断url是否可用
+    判断输入视频的url是否可用
     :param url: 视频地址，视频文件或者RTSP流等
     :return: True-可用，False-不可用
     """

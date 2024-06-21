@@ -60,6 +60,9 @@ class Push:
                             f"-r {self._fr} "
                             "-i - "
                             f"-c:v {encoder} "
+                            "-an "
+                            "-tune zerolatency "
+                            "-preset ultrafast "
                             "-pix_fmt yuv420p "
                             "-f flv "
                             f"{self._push_url}")

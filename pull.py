@@ -57,7 +57,7 @@ class Pull:
             time.sleep(0.03)
             cnt += 1
 
-        if cnt >= 300:
+        if cnt >= 298:
             self.release()
             logger.error("无法打开视频流")
 

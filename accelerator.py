@@ -6,8 +6,8 @@ class Accelerator:
     _decoder_map: dict[str, str] = dict()
     _encoder_map: dict[str, str] = dict()
 
-    @classmethod
-    def get_accel_name(cls):
+    @staticmethod
+    def get_accel_name():
         pass
 
     @classmethod
@@ -66,8 +66,8 @@ class NvidiaAccel(Accelerator):
     _encoder_pattern = re.compile(r"V.{5} (.{2,8}_nvenc) ", re.MULTILINE)
     _decoder_pattern = re.compile(r"V.{5} (.{2,8}_cuvid) ", re.MULTILINE)
 
-    @classmethod
-    def get_accel_name(cls):
+    @staticmethod
+    def get_accel_name():
         return "cuda"
 
     @classmethod
