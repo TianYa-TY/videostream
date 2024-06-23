@@ -2,7 +2,7 @@
 import time
 from typing import Type
 
-from accelerator import Accelerator
+from videostream.accelerator import Accelerator
 
 
 class PullPush:

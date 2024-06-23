@@ -2,14 +2,14 @@ import subprocess
 import time
 from queue import Queue
 from threading import Thread
-from typing import Type
+from typing import Type, Union
 
 import cv2
 import numpy as np
 
-from accelerator import Accelerator, NvidiaAccel
-from logger import logger
-from tools import get_info, is_stream, run_async, release_process, get_out_numpy_shape
+from videostream.accelerator import Accelerator
+from videostream.logger import logger
+from videostream.tools import get_info, is_stream, run_async, release_process, get_out_numpy_shape
 
 
 class Pull:
@@ -29,7 +29,7 @@ class Pull:
         self._stop = False  # 由外部传给线程的停止信号，多线程共享的变量
         self._q = Queue(maxsize=5)
         self._prod_thread = Thread(target=self._run)
-        self._ffmpeg_cmd: str | None = None
+        self._ffmpeg_cmd: Union[str, None] = None
 
         try:
             self.stream_info = get_info(self._url)
@@ -52,12 +52,12 @@ class Pull:
 
         # 开启读帧线程，等待线程中打开拉流进程
         self._prod_thread.start()
-        cnt = 0
-        while not self._is_pulling and cnt < 300:
+        wait_cnt = 0
+        while not self._is_pulling and wait_cnt < 300:
             time.sleep(0.03)
-            cnt += 1
+            wait_cnt += 1
 
-        if cnt >= 298:
+        if wait_cnt >= 298:
             self.release()
             logger.error("无法打开视频流")
 
@@ -75,7 +75,7 @@ class Pull:
 
     def _run(self):
         # 运行在子线程中
-        ffmpeg_proc: subprocess.Popen | None = None
+        ffmpeg_proc: Union[subprocess.Popen, None] = None
         out_np_shape = (0, 0, 0)
         while True:
             # 检查流，开启拉流的ffmpeg进程
@@ -118,7 +118,7 @@ class Pull:
 
         release_process(ffmpeg_proc)
 
-    def read(self, block: bool = True, timeout: float | None = None) -> np.ndarray:
+    def read(self, block: bool = True, timeout: Union[float, None] = None) -> np.ndarray:
         """读到None表示拉流已经关闭，或者出现错误"""
         return self._q.get(block, timeout)
 
@@ -139,10 +139,9 @@ class Pull:
 
 if __name__ == '__main__':
     url1 = "D:/Program Files/JetBrains/PyCharmProjects/ai-platform-manage/tests/media/output1.mp4"
-    url2 = "rtsp://admin:wisdri001@192.168.1.64/Stream/Channels/1"
     url3 = "Integrated Camera"
 
-    pulls = [Pull(url2, pix_fmt="bgr24", accel=None) for _ in range(2)]
+    pulls = [Pull(url1, pix_fmt="bgr24", accel=None) for _ in range(2)]
 
     while True:
         frames = [pull.read(block=True) for pull in pulls]

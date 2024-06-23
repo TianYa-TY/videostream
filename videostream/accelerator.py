@@ -1,21 +1,27 @@
 import re
+from abc import ABC, abstractmethod
 from subprocess import check_output, DEVNULL, CalledProcessError
+from typing import Union
 
 
-class Accelerator:
+class Accelerator(ABC):
     _decoder_map: dict[str, str] = dict()
     _encoder_map: dict[str, str] = dict()
 
     @staticmethod
+    @abstractmethod
     def get_accel_name():
+        """获取加速器名称"""
         pass
 
     @classmethod
+    @abstractmethod
     def check_ffmpeg(cls) -> bool:
         """检查当前ffmpeg是否支持此加速器"""
         pass
 
     @classmethod
+    @abstractmethod
     def get_num(cls) -> int:
         """获取加速器的个数"""
         pass
@@ -57,8 +63,8 @@ class Accelerator:
 
 
 class NvidiaAccel(Accelerator):
-    _ffmpeg_support: bool | None = None
-    _nvidia_num: int | None = None
+    _ffmpeg_support: Union[bool, None] = None
+    _nvidia_num: Union[int, None] = None
 
     _encoder_map: dict[str, str] = dict()
     _decoder_map: dict[str, str] = dict()

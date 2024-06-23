@@ -4,12 +4,11 @@ from queue import Queue
 from threading import Thread
 from typing import Type
 
-import cv2
 import numpy as np
 
-from logger import logger
-from accelerator import Accelerator, NvidiaAccel
-from tools import release_process, run_async
+from videostream.accelerator import Accelerator
+from videostream.logger import logger
+from videostream.tools import release_process, run_async
 
 
 class Push:
@@ -38,13 +37,20 @@ class Push:
         self._reconn = reconn
         self._accel = accel
 
+        self._is_pushing = False # 是否正在推流，用来向外界反馈推流状态
         self._stop = False  # 停止推流（用来关闭推流的信号量）
         self._q = Queue(maxsize=5)
         self._push_thread = Thread(target=self._run)
         self._ffmpeg_cmd: str | None = None
 
         self._make_ffmpeg_cmd()
+
+        # 开启推流线程，等待推流进程连接服务器
         self._push_thread.start()
+        wait_cnt = 0
+        while not self._is_pushing and wait_cnt < 300:
+            time.sleep(0.03)
+            wait_cnt += 1
 
     def _make_ffmpeg_cmd(self):
         """生成ffmpeg命令"""
@@ -76,6 +82,7 @@ class Push:
             if ffmpeg_proc is not None:
                 release_process(ffmpeg_proc)
             ffmpeg_proc = run_async(self._ffmpeg_cmd)
+            push_cnt = 0
 
             while not self._stop:
                 if not self._q.empty():
@@ -83,11 +90,16 @@ class Push:
                 try:
                     ffmpeg_proc.stdin.write(frame)
                     ffmpeg_proc.stdin.flush()
+                    push_cnt += 1
+                    if push_cnt > 10:
+                        self._is_pushing = True
                 except BrokenPipeError:
                     logger.error("推流失败，可能是和服务器之间的网络连接问题")
+                    self._is_pushing = False
                     break
                 except Exception as e:
                     logger.exception("写数据失败", e)
+                    self._is_pushing = False
                     break
                 time.sleep(sleep_secs)
 
@@ -100,6 +112,10 @@ class Push:
         if not self._q.full():
             self._q.put(frame.tobytes())
 
+    def is_pushing(self) -> bool:
+        """是否正在推流"""
+        return self._is_pushing
+
     def release(self):
         while self._push_thread.is_alive():
             self._reconn = False
@@ -109,7 +125,7 @@ class Push:
 
 if __name__ == '__main__':
     w, h, fr = 1920, 1080, 30
-    pushes = [Push(f"rtmp://192.168.133.237/live/a{i}", w, h, fr, accel=None, reconn=True) for i in range(1)]
+    pushes = [Push(f"rtmp://192.168.133.236/live/a{i}", w, h, fr, accel=None, reconn=True) for i in range(1)]
 
     value = 0
     while True:
@@ -119,5 +135,6 @@ if __name__ == '__main__':
         frame = np.full((h, w, 3), value, dtype=np.uint8)
         # frame = np.random.randint(0, 255, (h, w, 3), dtype=np.uint8)
         [push.put_frame(frame) for push in pushes]
+        [print(f"\r {push.is_pushing()}", end="") for push in pushes]
 
         time.sleep(1 / fr)
