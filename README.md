@@ -37,7 +37,7 @@ from videostream import Pull, Push, accelerator
 import time
 
 # accel参数指定使用Nvidia GPU加速解码
-# reconn 指定拉流断线后是否自动重连
+# reconn 对于视频流，设置拉流断线后是否自动重连；对于视频文件，设置视频结束后是否重新播放
 pull = Pull("rtsp://192.168.1.64/Stream/Channels/1", accel=accelerator.NvidiaAccel, reconn=True)
 
 fps = pull.stream_info[0]["avg_frame_rate"]
