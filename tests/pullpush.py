@@ -6,7 +6,7 @@ if __name__ == '__main__':
     from videostream import Pull
     from videostream import Push
 
-    pull = Pull("rtsp://admin:wisdri001@192.168.1.64/Stream/Channels/1", reconn=True)
+    pull = Pull("rtsp://192.168.1.64/Stream/Channels/1", reconn=True)
 
     fps = pull.stream_info[0]["avg_frame_rate"]
     w, h, fr = pull.stream_info[0]["width"], pull.stream_info[0]["height"], int(eval(fps))
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     try:
         while True:
             if pull.has_frame():
-                frame = pull.read()
+                frame = pull.get_frame()
                 push.put_frame(frame)
 
             time.sleep(0.01)

@@ -125,5 +125,5 @@ def release_process(proc: Popen):
 
 
 if __name__ == '__main__':
-    print(check_url("rtsp://admin:wisdri001@192.168.1.64/Stream/Channels/1"))
+    print(check_url("rtsp://192.168.1.64/Stream/Channels/1"))
 

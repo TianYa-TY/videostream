@@ -5,8 +5,8 @@ import cv2
 
 
 if __name__ == "__main__":
-    url1 = "D:/Program Files/JetBrains/PyCharmProjects/ai-platform-manage/tests/media/output1.mp4"
-    url2 = "rtsp://admin:wisdri001@192.168.1.64"
+    url1 = "D:/Program Files/tests/media/output1.mp4"
+    url2 = "rtsp://192.168.1.64/Stream/Channels/1"
     cap = cv2.VideoCapture(url2)
     while cap.isOpened():
         ret, frame = cap.read()

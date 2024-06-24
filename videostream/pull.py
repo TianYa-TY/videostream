@@ -117,7 +117,7 @@ class Pull:
 
         release_process(ffmpeg_proc)
 
-    def read(self, block: bool = True, timeout: Union[float, None] = None) -> np.ndarray:
+    def get_frame(self, block: bool = True, timeout: Union[float, None] = None) -> np.ndarray:
         """读到None表示拉流已经关闭，或者出现错误"""
         return self._q.get(block, timeout)
 
@@ -137,13 +137,13 @@ class Pull:
 
 
 if __name__ == '__main__':
-    url1 = "D:/Program Files/JetBrains/PyCharmProjects/ai-platform-manage/tests/media/output1.mp4"
+    url1 = "D:/Program Files/tests/media/output1.mp4"
     url3 = "Integrated Camera"
 
     pulls = [Pull(url1, pix_fmt="bgr24", accel=None) for _ in range(2)]
 
     while True:
-        frames = [pull.read(block=True) for pull in pulls]
+        frames = [pull.get_frame(block=True) for pull in pulls]
         zip_frames = [cv2.resize(frame, (1080 // len(frames), 840)) for frame in frames if frame is not None]
         cv2.imshow("frame", np.concatenate(zip_frames, axis=1))
         # cv2.imshow("frame", frames[0])
