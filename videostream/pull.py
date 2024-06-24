@@ -7,13 +7,13 @@ from typing import Type, Union
 import cv2
 import numpy as np
 
-from videostream.accelerator import Accelerator
+from videostream.accelerator import Accelerator, NoAccel
 from videostream.logger import logger
 from videostream.tools import get_info, is_stream, run_async, release_process, get_out_numpy_shape
 
 
 class Pull:
-    def __init__(self, url: str, pix_fmt: str = "rgb24", reconn: bool = False, accel: Type[Accelerator] = None):
+    def __init__(self, url: str, pix_fmt: str = "rgb24", reconn: bool = False, accel: Type[Accelerator] = NoAccel):
         """
         :param url: 视频文件或视频流的地址
         :param pix_fmt: 输出帧的格式， "rgb24" 或 "bgr24"
@@ -40,13 +40,13 @@ class Pull:
             logger.error(e)
             return
 
-        if self._accel is not None:
-            if not self._accel.check_ffmpeg():
-                logger.warning("未安装ffmpeg或当前ffmpeg不支持nvidia GPU加速")
-                self._accel = None
-            elif self._accel.get_num() <= 0:
-                logger.warning("没有可用的nvidia显卡或没有正确安装nvidia驱动")
-                self._accel = None
+        # 检查加速器是否可用
+        if not self._accel.check_ffmpeg():
+            logger.warning("未安装ffmpeg或当前ffmpeg不支持nvidia GPU加速")
+            self._accel = NoAccel
+        elif self._accel.get_num() <= 0:
+            logger.warning("没有可用的nvidia显卡或没有正确安装nvidia驱动")
+            self._accel = NoAccel
 
         self._make_ffmpeg_cmd()
 
@@ -63,7 +63,7 @@ class Pull:
 
     def _make_ffmpeg_cmd(self):
         """构造ffmpeg命令"""
-        accel_opt = f"-hwaccel {self._accel.get_accel_name()}" if self._accel is not None else ""
+        accel_opt = self._accel.get_accel_opt()
         rtsp_opt = f"-rtsp_transport tcp" if self._url.startswith("rtsp://") else ""
         file_stream_opt = f"-re" if not is_stream(self._url) else "-flags low_delay"
 
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     url1 = "D:/Program Files/tests/media/output1.mp4"
     url3 = "Integrated Camera"
 
-    pulls = [Pull(url1, pix_fmt="bgr24", accel=None) for _ in range(2)]
+    pulls = [Pull(url1, pix_fmt="bgr24", accel=NoAccel) for _ in range(2)]
 
     while True:
         frames = [pull.get_frame(block=True) for pull in pulls]

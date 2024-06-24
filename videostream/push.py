@@ -6,7 +6,7 @@ from typing import Type, Union
 
 import numpy as np
 
-from videostream.accelerator import Accelerator
+from videostream.accelerator import Accelerator, NoAccel
 from videostream.logger import logger
 from videostream.tools import release_process, run_async
 
@@ -15,7 +15,7 @@ class Push:
     def __init__(self, push_url: str,
                  w: int, h: int, fr: int, pix_fmt: str = "rgb24",
                  reconn: bool = False,
-                 accel: Type[Accelerator] = None):
+                 accel: Type[Accelerator] = NoAccel):
         """
         推流到服务器上
         :param push_url: 推送url
@@ -43,13 +43,13 @@ class Push:
         self._push_thread = Thread(target=self._run)
         self._ffmpeg_cmd: Union[str, None] = None
 
-        if self._accel is not None:
-            if not self._accel.check_ffmpeg():
-                logger.warning("未安装ffmpeg或当前ffmpeg不支持nvidia GPU加速")
-                self._accel = None
-            elif self._accel.get_num() <= 0:
-                logger.warning("没有可用的nvidia显卡或没有正确安装nvidia驱动")
-                self._accel = None
+        # 检查加速器是否可用
+        if not self._accel.check_ffmpeg():
+            logger.warning("未安装ffmpeg或当前ffmpeg不支持nvidia GPU加速")
+            self._accel = NoAccel
+        elif self._accel.get_num() <= 0:
+            logger.warning("没有可用的nvidia显卡或没有正确安装nvidia驱动")
+            self._accel = NoAccel
 
         self._make_ffmpeg_cmd()
 
@@ -62,10 +62,12 @@ class Push:
 
     def _make_ffmpeg_cmd(self):
         """生成ffmpeg命令"""
-        encoder = "libx264" if self._accel is None else self._accel.get_encoder("h264")
-        encoder = "libx264" if encoder == "h264" else encoder
+        hwaccel = self._accel.get_accel_opt()
+        encoder = self._accel.get_encoder("h264")
+        encoder_param = self._accel.get_encoder_param()
         self._ffmpeg_cmd = ("ffmpeg "
                             "-loglevel warning "
+                            f"{hwaccel} "
                             "-y "
                             "-rw_timeout 3000000 "
                             f"-f rawvideo "
@@ -74,9 +76,8 @@ class Push:
                             f"-r {self._fr} "
                             "-i - "
                             f"-c:v {encoder} "
+                            f"{encoder_param} "
                             "-an "
-                            "-tune zerolatency "
-                            "-preset ultrafast "
                             "-pix_fmt yuv420p "
                             "-f flv "
                             f"{self._push_url}")
@@ -133,7 +134,7 @@ class Push:
 
 if __name__ == '__main__':
     w, h, fr = 1920, 1080, 30
-    pushes = [Push(f"rtmp://192.168.133.236/live/a{i}", w, h, fr, accel=None, reconn=True) for i in range(1)]
+    pushes = [Push(f"rtmp://192.168.133.236/live/a{i}", w, h, fr, reconn=True) for i in range(1)]
 
     value = 0
     while True:

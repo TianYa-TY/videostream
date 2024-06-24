@@ -10,7 +10,7 @@ class Accelerator(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_accel_name():
+    def get_accel_opt():
         """获取加速器名称"""
         pass
 
@@ -18,6 +18,11 @@ class Accelerator(ABC):
     @abstractmethod
     def check_ffmpeg(cls) -> bool:
         """检查当前ffmpeg是否支持此加速器"""
+        pass
+
+    @staticmethod
+    def get_encoder_param() -> str:
+        """获取加速器对应的编码器的参数"""
         pass
 
     @classmethod
@@ -62,6 +67,28 @@ class Accelerator(ABC):
             return codec
 
 
+class NoAccel(Accelerator):
+    _encoder_map: dict[str, str] = {"h264": "libx264", "hevc": "libx265", "vp9": "libvpx-vp9", "av1": "libaom-av1"}
+    _decoder_map: dict[str, str] = {"h264": "h264", "hevc": "hevc", "vp9": "vp9", "av1": "av1"}
+
+    @staticmethod
+    def get_accel_opt():
+        return ""
+
+    @classmethod
+    def check_ffmpeg(cls) -> bool:
+        return True
+
+    @staticmethod
+    def get_encoder_param() -> str:
+        """获取编码器参数"""
+        return "-tune zerolatency -preset ultrafast"
+
+    @classmethod
+    def get_num(cls) -> int:
+        return 1
+
+
 class NvidiaAccel(Accelerator):
     _ffmpeg_support: Union[bool, None] = None
     _nvidia_num: Union[int, None] = None
@@ -73,8 +100,13 @@ class NvidiaAccel(Accelerator):
     _decoder_pattern = re.compile(r"V.{5} (.{2,8}_cuvid) ", re.MULTILINE)
 
     @staticmethod
-    def get_accel_name():
-        return "cuda"
+    def get_accel_opt():
+        return "-hwaccel cuda"
+
+    @staticmethod
+    def get_encoder_param() -> str:
+        """获取编码器参数"""
+        return ""
 
     @classmethod
     def check_ffmpeg(cls) -> bool:
