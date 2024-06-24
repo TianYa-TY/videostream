@@ -4,7 +4,7 @@
 系统环境中需要预先安装ffmpeg工具（命令与6.1.1兼容的版本即可）
 ### 安装方式
 ```bash
-pip git+https://github.com/TianYa-TY/videostream.git
+pip install git+https://github.com/TianYa-TY/videostream.git
 ```
 ### 使用示例
 #### 基本用法
