@@ -100,11 +100,10 @@ class Pull:
                 self._is_pulling = False
 
             # 从ffmpeg进程读帧放入队列中
-            while not self._stop: # 此信号是外部传进来的停止信号
+            while not self._stop:  # 此信号是外部传进来的停止信号
                 in_bytes = ffmpeg_proc.stdout.read(np.prod(out_np_shape))
                 # 读数据错误，结束整个拉流程序
                 if not in_bytes:
-                    self._q.put(None)
                     self._is_pulling = False  # 告诉外界ffmpeg拉流进程死了
                     break
 
@@ -145,7 +144,7 @@ if __name__ == '__main__':
 
     while True:
         frames = [pull.read(block=True) for pull in pulls]
-        zip_frames = [cv2.resize(frame, (1080//len(frames), 840)) for frame in frames if frame is not None]
+        zip_frames = [cv2.resize(frame, (1080 // len(frames), 840)) for frame in frames if frame is not None]
         cv2.imshow("frame", np.concatenate(zip_frames, axis=1))
         # cv2.imshow("frame", frames[0])
         if cv2.waitKey(1) & 0xFF == ord('q'):
