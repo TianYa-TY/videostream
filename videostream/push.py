@@ -43,6 +43,14 @@ class Push:
         self._push_thread = Thread(target=self._run)
         self._ffmpeg_cmd: Union[str, None] = None
 
+        if self._accel is not None:
+            if not self._accel.check_ffmpeg():
+                logger.warning("未安装ffmpeg或当前ffmpeg不支持nvidia GPU加速")
+                self._accel = None
+            elif self._accel.get_num() <= 0:
+                logger.warning("没有可用的nvidia显卡或没有正确安装nvidia驱动")
+                self._accel = None
+
         self._make_ffmpeg_cmd()
 
         # 开启推流线程，等待推流进程连接服务器

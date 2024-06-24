@@ -119,8 +119,5 @@ class NvidiaAccel(Accelerator):
         return cls._nvidia_num
 
 
-accel_dict = {"cuda": NvidiaAccel}
-
-
 if __name__ == '__main__':
     print(NvidiaAccel.get_num())
