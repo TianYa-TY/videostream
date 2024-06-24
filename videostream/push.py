@@ -2,7 +2,7 @@ import subprocess
 import time
 from queue import Queue
 from threading import Thread
-from typing import Type
+from typing import Type, Union
 
 import numpy as np
 
@@ -41,7 +41,7 @@ class Push:
         self._stop = False  # 停止推流（用来关闭推流的信号量）
         self._q = Queue(maxsize=5)
         self._push_thread = Thread(target=self._run)
-        self._ffmpeg_cmd: str | None = None
+        self._ffmpeg_cmd: Union[str, None] = None
 
         self._make_ffmpeg_cmd()
 
@@ -77,7 +77,7 @@ class Push:
         """推流子线程"""
         sleep_secs = max(0., 1 / self._fr - 0.007)
         frame = np.zeros((self._h, self._w, 3), dtype=np.uint8).tobytes()
-        ffmpeg_proc: subprocess.Popen | None = None
+        ffmpeg_proc: Union[subprocess.Popen, None] = None
         while True:
             if ffmpeg_proc is not None:
                 release_process(ffmpeg_proc)
