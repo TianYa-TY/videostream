@@ -91,7 +91,7 @@ class Push:
                     ffmpeg_proc.stdin.write(frame)
                     ffmpeg_proc.stdin.flush()
                     push_cnt += 1
-                    if push_cnt > 10:
+                    if push_cnt == 10:
                         self._is_pushing = True
                 except BrokenPipeError:
                     logger.error("推流失败，可能是和服务器之间的网络连接问题")
