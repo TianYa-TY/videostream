@@ -24,6 +24,7 @@ class Push:
         :param fr: 帧率
         :param pix_fmt: 像素格式
         :param reconn: 与视频流服务器断线重连
+        :param accel: 使用的加速器，默认不适用加速器(NoAccel)
         """
         assert w > 0 and h > 0, "宽高必须大于0"
         assert 0 < fr < 120, "帧率必须大于0且小于120"

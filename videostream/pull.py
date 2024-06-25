@@ -18,7 +18,7 @@ class Pull:
         :param url: 视频文件或视频流的地址
         :param pix_fmt: 输出帧的格式， "rgb24" 或 "bgr24"
         :param reconn: 对于视频流，断线后重连，对于视频文件，播放结束后再重头开始播放
-        :param accel: 使用哪个加速器，为None则不使用加速器
+        :param accel: 使用哪个加速器，默认不适用加速器(NoAccel)
         """
         assert pix_fmt in ("rgb24", "bgr24", "yuv420p", "yuvj420p", "nv12", "gray")
         self._url = url
