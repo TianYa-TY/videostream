@@ -63,12 +63,12 @@ class Push:
 
     def _make_ffmpeg_cmd(self):
         """生成ffmpeg命令"""
-        hwaccel = self._accel.get_accel_opt()
+        accel_opt = self._accel.get_accel_opt()
         encoder = self._accel.get_encoder("h264")
         encoder_param = self._accel.get_encoder_param()
         self._ffmpeg_cmd = ("ffmpeg "
                             "-loglevel warning "
-                            f"{hwaccel} "
+                            f"{accel_opt} "
                             "-y "
                             "-rw_timeout 3000000 "
                             f"-f rawvideo "

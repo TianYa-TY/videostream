@@ -106,7 +106,7 @@ class NvidiaAccel(Accelerator):
     @staticmethod
     def get_encoder_param() -> str:
         """获取编码器参数"""
-        return ""
+        return "-preset p1"
 
     @classmethod
     def check_ffmpeg(cls) -> bool:
