@@ -1,7 +1,8 @@
 ### 简介
 本项目是基于ffmpeg6.1.1使用的包，用于拉取视频流，获取视频帧，进行一些处理后再推送到视频服务器上。
 ### 使用条件
-系统环境中需要预先安装ffmpeg工具（命令与6.1.1兼容的版本即可）
+系统环境中需要预先安装ffmpeg工具（命令与6.1.1兼容的版本即可）   
+python版本 >= 3.9
 ### 安装方式
 ```bash
 pip install git+https://github.com/TianYa-TY/videostream.git
